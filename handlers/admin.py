@@ -8,10 +8,10 @@ from tools.text import Text as txt
 dp = Router()
 
 
-@dp.callback_query(F.data == "admin_panel")
+@dp.callback_query(F.data == "admin.panel")
 async def admin_panel(callback: types.CallbackQuery):
     """Отображает интерфейс администраторской панели с кнопками управления"""
-    keyboard = Keyboard.get_keyboard(Keyboard.ADMIN)
+    keyboard = await Keyboard.get_keyboard(Keyboard.ADMIN)
     await callback.answer()
     await callback.message.edit_text(txt.ADMIN, reply_markup=keyboard, parse_mode=ParseMode.HTML)
 
@@ -19,7 +19,7 @@ async def admin_panel(callback: types.CallbackQuery):
 @dp.callback_query(F.data == "test.gen")
 async def test_gen(callback: types.CallbackQuery):
     """Запускает процесс тестовой генерации данных"""
-    keyboard = Keyboard.get_keyboard(Keyboard.ADMIN_GEN)
+    keyboard = await Keyboard.get_keyboard(Keyboard.ADMIN_GEN)
     await callback.answer()
     await callback.message.edit_text(txt.ADMIN_WAIT_GEN)
     await DataGen.test_generation()

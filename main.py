@@ -7,7 +7,7 @@ from aiogram.enums.parse_mode import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from tools.database import *
 
-import config
+import configs.config
 from handlers.main_handlers import dp as router
 from handlers.check_handlers import dp as router2
 from handlers.sensors_handlers import dp as router3

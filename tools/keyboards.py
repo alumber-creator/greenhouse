@@ -8,7 +8,7 @@ class Keyboard:
     ADMIN_GEN = "admin.gen"
 
     @staticmethod
-    def get_keyboard(key_type: str) -> InlineKeyboardMarkup:
+    async def get_keyboard(key_type: str, telegram_id: int = None) -> InlineKeyboardMarkup:
         """Генерирует клавиатуры указанного типа"""
         builder = InlineKeyboardBuilder()
         if key_type == "admin":
@@ -33,4 +33,22 @@ class Keyboard:
             )
             builder.adjust(1, 1)
 
+        if key_type == "agro.start":
+            builder.add(types.InlineKeyboardButton(
+                text="Настройки",
+                callback_data="settings")
+            )
+            if is_admin(telegram_id):
+                builder.add(types.InlineKeyboardButton(
+                    text="Админ панель",
+                    callback_data="admin_panel")
+                )
+                builder.add(types.InlineKeyboardButton(
+                    text="Панель управления",
+                    callback_data="panel")
+                )
+            builder.adjust(1, 1, 1)
+
         return builder.as_markup()
+
+
