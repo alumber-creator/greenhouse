@@ -1,8 +1,9 @@
 import random
 from datetime import datetime
 
-from config import Config
-from tools.database import Database
+from configs.config import Config
+from database import Database
+from database.models import SensorData
 
 
 class DataGen:
@@ -25,11 +26,16 @@ class DataGen:
         return results
 
     @staticmethod
-    async def test_generation() -> None:
+    async def test_generation(db: Database) -> None:
         """Основная функция генерации тестовых данных"""
-        await Database.init_db('sensors.db')
-        start_date = datetime(2025, datetime.now().month, 1)
-        end_date = datetime(2025, datetime.now().month, 31)
+        await db.initialize()
+        start_date = datetime(datetime.now().year, datetime.now().month, 1)
+        end_date = datetime(datetime.now().year, datetime.now().month, 31)
         for sensor in Config.SENSORS:
             for time in DataGen.generate_random_datetimes(start_date, end_date, 1000):
-                await Database.insert_sensors(sensor, random.randint(10, 100), time.timestamp())
+                data = SensorData(
+                    sensor_id=sensor,
+                    value=random.randint(10, 100),
+                    timestamp=time
+                )
+                await db.sensors.insert_data()
