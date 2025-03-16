@@ -25,17 +25,17 @@ class DataGen:
 
         return results
 
-    @staticmethod
-    async def test_generation(db: Database) -> None:
+    @classmethod
+    async def test_generation(cls, db: Database) -> None:
         """Основная функция генерации тестовых данных"""
         await db.initialize()
         start_date = datetime(datetime.now().year, datetime.now().month, 1)
         end_date = datetime(datetime.now().year, datetime.now().month, 31)
         for sensor in Config.SENSORS:
-            for time in DataGen.generate_random_datetimes(start_date, end_date, 1000):
+            for time in cls.generate_random_datetimes(start_date, end_date, 1000):
                 data = SensorData(
                     sensor_id=sensor,
                     value=random.randint(10, 100),
                     timestamp=time
                 )
-                await db.sensors.insert_data()
+                await db.sensors.insert_data(data)

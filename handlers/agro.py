@@ -9,6 +9,7 @@ from database.models import User
 
 dp = Router()
 
+
 @dp.callback_query(F.data == "start")
 async def start(callback: types.CallbackQuery):
     """Главное меню с динамическими кнопками"""
@@ -17,6 +18,7 @@ async def start(callback: types.CallbackQuery):
     await callback.answer()
     await callback.message.edit_text(txt.AGRO_START, reply_markup=keyboard, parse_mode=ParseMode.HTML)
 
+
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     """Обработчик команды /start"""
@@ -24,12 +26,14 @@ async def cmd_start(message: types.Message):
     keyboard = await Keyboard.get_keyboard(Keyboard.Types.AGRO_START, db, message.from_user.id)
     await message.answer(txt.AGRO_START, reply_markup=keyboard, parse_mode=ParseMode.HTML)
 
+
 @dp.callback_query(F.data == "settings")
 async def settings(callback: types.CallbackQuery):
     """Персональные настройки пользователя"""
     await callback.answer()
     keyboard = await Keyboard.get_keyboard(Keyboard.Types.AGRO_SETTINGS, db)
     await callback.message.edit_text(text=await Text.get_text_agro_settings(callback, db), reply_markup=keyboard, parse_mode=ParseMode.HTML)
+
 
 @dp.callback_query(F.data == "panel")
 async def panel(callback: types.CallbackQuery):

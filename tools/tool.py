@@ -16,7 +16,7 @@ class Tools:
 
     @classmethod
     async def check_admin(cls, callback: types.CallbackQuery, db: Database):
-        if not Tools.is_admin(callback.from_user.id, db):
+        if not await Tools.is_admin(callback.from_user.id, db):
             await callback.answer()
             logging.debug(f"{txt.ERROR_ADMIN_RESTRICTED} {callback.from_user.username}")
             await callback.message.delete()

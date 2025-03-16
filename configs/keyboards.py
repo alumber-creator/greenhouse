@@ -91,4 +91,17 @@ class Keyboard:
         }
         return adjust_patterns.get(key_type, (1,))
 
+    def build_notifications_kb(checks_state: tuple[int, int, int]) -> types.InlineKeyboardMarkup:
+        """Сборка клавиатуры для настроек уведомлений"""
+        builder = InlineKeyboardBuilder()
 
+        for (check_name, title), state in zip(CHECK_OPTIONS, checks_state):
+            builder.button(
+                text=f"{title} {'✅' if state else '❌'}",
+                callback_data=f"toggle_check:{check_name}"
+            )
+
+        builder.button(text="Назад", callback_data="settings")
+        builder.adjust(*[1] * len(CHECK_OPTIONS), 1)
+
+        return builder.as_markup()

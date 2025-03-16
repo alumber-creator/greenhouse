@@ -42,8 +42,8 @@ class UserDatabase(DatabaseHandler):
         """Добавление пользователя с обработкой ошибок"""
         try:
             await self.execute(
-                "INSERT INTO users (user_id, username) VALUES (?, ?)",
-                (user_data.user_id, user_data.username)
+                "INSERT INTO users (user_id, username, role) VALUES (?, ?, ?)",
+                (user_data.user_id, user_data.username, user_data.role)
             )
             return True
         except sql.IntegrityError as e:
