@@ -77,7 +77,7 @@ async def process_level(
     level = int(callback.data.split('_')[2])
     data = await state.get_data()
 
-    e = await NotificationService.send_notification(data['text'], level, bot)
+    await NotificationService.send_notification(data['text'], level, bot)
     await callback.message.edit_text(txt.NOTIFICATION_SUCCESS)
 
     await state.clear()
