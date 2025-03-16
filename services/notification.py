@@ -1,8 +1,7 @@
 from aiogram import Bot
 from typing import Optional
 
-from configs.config import db
-from database.models import User
+from config import db
 
 
 class NotificationService:

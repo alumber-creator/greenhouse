@@ -2,9 +2,9 @@ from aiogram import Router, F, types
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
 
-from configs.keyboards import Keyboard
-from configs.text import Text as txt, Text
-from configs.config import db
+from config.keyboards import Keyboard
+from config.text import Text as txt, Text
+from config import db
 from database.models import User
 
 dp = Router()

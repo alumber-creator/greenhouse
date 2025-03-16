@@ -2,6 +2,7 @@ from .bot_db import UserDatabase
 from .sensor_db import SensorDatabase
 from .repositories.user_checks import UserChecksRepository
 
+
 class Database:
     def __init__(self, sensors):
         self.users = UserDatabase()

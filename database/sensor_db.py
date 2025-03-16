@@ -1,3 +1,5 @@
+from typing import Iterable, Any
+
 from .base import DatabaseHandler
 from .models import SensorData
 import aiosqlite as sql
@@ -47,3 +49,11 @@ class SensorDatabase(DatabaseHandler):
         except sql.Error as e:
             logging.error(f"Failed to insert sensor data: {str(e)}")
             return False
+
+    async def get_data(self, query: str, params: Iterable[Any] = ()) -> list[SensorData]:
+        """Получение всех результатов запроса"""
+        async with self.connection() as conn:
+            cursor = await conn.execute(query, params)
+            return await cursor.fetchall()
+
+

@@ -3,17 +3,15 @@ from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
-from configs.config import db, Config
+from config import db, Config, bot
 from database.repositories.user_checks import UserChecksRepository
-from configs.keyboards import Keyboard as kb
-from configs.config import bot
+from config.keyboards import Keyboard as kb
 from services.notification import NotificationService
 from states.notification import NotificationStates
-from tools.tool import Tools
-from configs.text import Text as txt
+from utils import Tools
+from config.text import Text as txt
 
 dp = Router()
-
 
 
 @dp.callback_query(F.data == "settings.notifications")

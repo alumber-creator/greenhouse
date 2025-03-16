@@ -1,6 +1,6 @@
 from aiogram.types import CallbackQuery
 
-from configs.config import Config
+from config import Config
 from database import Database
 
 

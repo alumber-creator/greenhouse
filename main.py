@@ -6,7 +6,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
-from configs.config import db, bot
+from config.__init__ import db, bot
 from handlers.admin import dp as r1
 from handlers.agro import dp as r2
 from handlers.notifications import dp as r3

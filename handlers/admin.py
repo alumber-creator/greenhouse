@@ -1,11 +1,11 @@
 from aiogram import types, F, Router
 from aiogram.enums import ParseMode
 
-from configs.config import db
-from tools.data_generation import DataGen
-from configs.keyboards import Keyboard
-from configs.text import Text as txt
-from tools.tool import Tools
+from config import db
+from utils.data_generation import DataGen
+from config.keyboards import Keyboard
+from config.text import Text as txt
+from utils import Tools
 
 
 dp = Router()

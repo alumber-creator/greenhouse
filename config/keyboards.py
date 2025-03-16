@@ -3,9 +3,9 @@ from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from typing import Dict, List, Tuple
 
-from configs.config import Config
+from config import Config
 from database import Database
-from tools.tool import Tools
+from utils import Tools
 
 
 class Keyboard:

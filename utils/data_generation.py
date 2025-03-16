@@ -1,7 +1,7 @@
 import random
 from datetime import datetime
 
-from configs.config import Config
+from config import Config
 from database import Database
 from database.models import SensorData
 

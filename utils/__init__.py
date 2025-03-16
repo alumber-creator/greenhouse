@@ -1,8 +1,9 @@
 import logging
 
 from aiogram import types
-from configs.text import Text as txt
+
 from database import Database
+from config.text import Text as txt
 
 
 class Tools:
@@ -16,7 +17,7 @@ class Tools:
 
     @classmethod
     async def check_admin(cls, callback: types.CallbackQuery, db: Database):
-        if not await Tools.is_admin(callback.from_user.id, db):
+        if not await cls.is_admin(callback.from_user.id, db):
             await callback.answer()
             logging.debug(f"{txt.ERROR_ADMIN_RESTRICTED} {callback.from_user.username}")
             await callback.message.delete()
@@ -24,5 +25,3 @@ class Tools:
         else:
             await callback.answer()
             return False
-
-
