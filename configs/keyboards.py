@@ -3,6 +3,7 @@ from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from typing import Dict, List, Tuple
 
+from configs.config import Config
 from database import Database
 from tools.tool import Tools
 
@@ -91,17 +92,33 @@ class Keyboard:
         }
         return adjust_patterns.get(key_type, (1,))
 
+    @staticmethod
     def build_notifications_kb(checks_state: tuple[int, int, int]) -> types.InlineKeyboardMarkup:
         """Сборка клавиатуры для настроек уведомлений"""
         builder = InlineKeyboardBuilder()
 
-        for (check_name, title), state in zip(CHECK_OPTIONS, checks_state):
+        for (check_name, title), state in zip(Config.CHECK_OPTIONS, checks_state):
             builder.button(
                 text=f"{title} {'✅' if state else '❌'}",
                 callback_data=f"toggle_check:{check_name}"
             )
 
         builder.button(text="Назад", callback_data="settings")
-        builder.adjust(*[1] * len(CHECK_OPTIONS), 1)
+        builder.adjust(*[1] * len(Config.CHECK_OPTIONS), 1)
+
+        return builder.as_markup()
+
+    @staticmethod
+    def build_levels_kb() -> types.InlineKeyboardMarkup:
+        builder = InlineKeyboardBuilder()
+
+        for level in range(1, 5):
+            builder.button(
+                text=f"Уровень {level}",
+                callback_data=f"notif_level_{level}"
+            )
+
+        builder.button(text="❌ Отмена", callback_data="notif_cancel")
+        builder.adjust(1, repeat=True)
 
         return builder.as_markup()

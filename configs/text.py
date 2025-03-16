@@ -1,5 +1,6 @@
 from aiogram.types import CallbackQuery
 
+from configs.config import Config
 from database import Database
 
 
@@ -10,7 +11,14 @@ class Text:
 
     AGRO_START = "Приветствуем вас в боте для управления автономным агрокомплексом"
 
-    ERROR_ADMIN_RESTRICTED = "Запрещен доступ пользователю"
+    NOTIFICATION_SETTINGS = "<b>Настройка уведомлений:</b>\n\nВыберите опции"
+    NOTIFICATION_TEXT_CHOOSE = "📝 Введите текст уведомления:"
+    NOTIFICATION_LEVEL_CHOOSE = "🔢 Выберите уровень уведомления (1-4):"
+    NOTIFICATION_SUCCESS = "✅ Уведомление успешно отправлено!"
+    NOTIFICATION_CANCEL = "❌ Отправка уведомления отменена"
+
+    ERROR_ADMIN_RESTRICTED = "Запрещен доступ пользователю ниже ранга admin"
+    ERROR_NOTIFICATION = f"⚠️ Текст уведомления слишком длинный. Максимум {Config.MAX_TEXT_LENGTH} символов."
 
     @staticmethod
     async def get_text_agro_settings(callback: CallbackQuery, db: Database) -> str:

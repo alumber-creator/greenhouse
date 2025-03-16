@@ -21,12 +21,12 @@ class UserChecksRepository:
                 (self.user_id,)
             )
             result = await cursor.fetchone()
-
             if not result:
                 await conn.execute(
                     "INSERT INTO user_checks (user_id) VALUES (?)",
                     (self.user_id,)
                 )
+                await conn.commit()
                 return (0, 0, 0)
             return result
 
@@ -41,6 +41,7 @@ class UserChecksRepository:
                 f"UPDATE user_checks SET {check_name} = NOT {check_name} WHERE user_id = ?",
                 (self.user_id,)
             )
+            await conn.commit()
             cursor = await conn.execute(
                 "SELECT check1, check2, check3 FROM user_checks WHERE user_id = ?",
                 (self.user_id,)

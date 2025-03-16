@@ -1,33 +1,25 @@
 import asyncio
 import logging
-import os
 
-from aiogram import Bot, Dispatcher
+from aiogram import Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
-from dotenv import load_dotenv
 
-from configs.config import db
+from configs.config import db, bot
 from handlers.admin import dp as r1
 from handlers.agro import dp as r2
+from handlers.notifications import dp as r3
 
 
-handlers = (r1, r2)
+handlers = (r1, r2, r3)
 
-load_dotenv()
-
-TOKEN = os.getenv('BOT_TOKEN')
-
-if not TOKEN:
-    raise ValueError("Токен бота не найден в переменных окружения!")
 
 
 
 async def main():
-    bot = Bot(TOKEN)
-
     await db.initialize()
+
     default = DefaultBotProperties(parse_mode=ParseMode.HTML)
     dp = Dispatcher(storage=MemoryStorage(), default=default)
 

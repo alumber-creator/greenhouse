@@ -57,9 +57,14 @@ class UserDatabase(DatabaseHandler):
         """Получение пользователей с фильтрацией"""
         query = f"SELECT * FROM users WHERE {conditions}"
         results = await self.fetch_all(query, params)
-        return [User.parse_obj({
+        return [User.model_validate({
             "user_id": row[1],
             "username": row[2],
             "role": row[3],
             "created_at": row[4]
         }) for row in results]
+
+    async def get_checks(self, level) -> list[User]:
+        return [User.model_validate({
+            "user_id": row[0],
+        }) for row in await self.fetch_all(f"SELECT * FROM user_checks WHERE check{level} = True")]
