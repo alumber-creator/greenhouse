@@ -14,6 +14,8 @@ class Keyboard:
         ADMIN_GEN = "admin.gen"
         AGRO_START = "agro.start"
         AGRO_SETTINGS = "agro.settings"
+        AGRO_PANEL = "agro.panel"
+        AGRO_GRAPH = "agro.graph"
 
     # Конфигурация кнопок для разных типов клавиатур
     _KEYBOARD_CONFIG: Dict[str, List[Tuple[str, str]]] = {
@@ -33,6 +35,13 @@ class Keyboard:
             ("Настройки", "settings"),
             ("Админ панель", "admin.panel"),
             ("Панель управления", "panel")
+        ],
+        Types.AGRO_PANEL: [
+            ("График данных сенсоров", "agro.graph"),
+            ("Назад", "start")
+        ],
+        Types.AGRO_GRAPH: [
+            ("Назад", "start")
         ]
     }
 

@@ -8,14 +8,10 @@ from config import db
 
 class PlotGenerator:
     @staticmethod
-    async def generate_plot(sensor_id: str, date: datetime) -> BytesIO | None:
-        start = date.replace(hour=0, minute=0, second=0, microsecond=0)
-        end = start.replace(day=date.day + 1)
-
-        data = await db.sensors.get_data(
-            f"SELECT * FROM {sensor_id} WHERE time BETWEEN ? AND ?",
-            (start, end)
-        )
+    async def generate_plot(sensor_id: str, start_date: datetime, end_date: datetime) -> BytesIO | None:
+        query = f"SELECT * FROM {sensor_id} WHERE time BETWEEN ? AND ?"
+        params = (sensor_id, start_date, end_date)
+        data = await db.sensors.get_data(query, params)
         if not data:
             return None
 

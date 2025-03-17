@@ -1,112 +1,137 @@
 from aiogram import Router, F, types
-from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import BufferedInputFile
+from aiogram.types import BufferedInputFile, CallbackQuery
 
+import config.keyboards
+from callbacks.graph import DateModeCallback, DateSelectionCallback
 from states.graph import GraphStates
 from utils.calendar_kb import GraphMenu
 from utils.plot import PlotGenerator as pg
 from datetime import datetime
+from config.keyboards import Keyboard as kb
 
 dp = Router()
 
-@dp.message(Command("graph"))
-async def cmd_graph(message: types.Message, state: FSMContext):
-    await state.set_state(GraphStates.SENSOR_SELECT)
-    await message.answer("Select sensor:", reply_markup=await GraphMenu.sensors_menu())
 
-
-@dp.callback_query(F.data == "back", GraphStates.SENSOR_SELECT)
-async def back_to_start(callback: types.CallbackQuery, state: FSMContext):
-    await state.clear()
-    await callback.message.delete()
-
-
-@dp.callback_query(GraphStates.SENSOR_SELECT)
-async def sensor_selected(callback: types.CallbackQuery, state: FSMContext):
-    sensor_id = callback.data.split(":")[1]
-    await state.update_data(sensor_id=sensor_id)
-    await state.set_state(GraphStates.YEAR_SELECT)
+@dp.callback_query(F.data == "agro.graph")
+async def graph(callback: types.CallbackQuery, state: FSMContext):
+    """Обработчик входа в систему графиков"""
+    await state.set_state(GraphStates.sensor_selected)
     await callback.message.edit_text(
-        "Select year:",
-        reply_markup=await GraphMenu.years_menu()
-    )
-
-
-@dp.callback_query(GraphStates.YEAR_SELECT)
-async def year_selected(callback: types.CallbackQuery, state: FSMContext):
-    year = int(callback.data.split(":")[1])
-    await state.update_data(year=year)
-    await state.set_state(GraphStates.MONTH_SELECT)
-    await callback.message.edit_text(
-        "Select month:",
-        reply_markup=await GraphMenu.months_menu(year)
-    )
-
-
-@dp.callback_query(GraphStates.MONTH_SELECT)
-async def month_selected(callback: types.CallbackQuery, state: FSMContext):
-    month = int(callback.data.split(":")[1])
-    data = await state.get_data()
-    await state.update_data(month=month)
-    await state.set_state(GraphStates.DAY_SELECT)
-    await callback.message.edit_text(
-        "Select day:",
-        reply_markup=await GraphMenu.days_menu(data['year'], month)
-    )
-
-
-@dp.callback_query(GraphStates.DAY_SELECT)
-async def day_selected(callback: types.CallbackQuery, state: FSMContext):
-    day = int(callback.data.split(":")[1])
-    data = await state.get_data()
-
-    try:
-        selected_date = datetime(data['year'], data['month'], day)
-        plot_buf = await pg.generate_plot(data['sensor_id'], selected_date)
-
-        if plot_buf:
-            # Конвертируем BytesIO в BufferedInputFile
-            photo = BufferedInputFile(
-                file=plot_buf.getvalue(),
-                filename=f"graph_{data['sensor_id']}.png"
-            )
-            await callback.message.answer_photo(photo)
-            plot_buf.close()
-        else:
-            await callback.message.answer("⚠️ No data available for selected date")
-
-    except ValueError as e:
-        await callback.message.answer(f"Error: {str(e)}")
-
-    await state.clear()
-
-
-# Добавляем обработчики для кнопок "Назад"
-@dp.callback_query(F.data == "back", GraphStates.YEAR_SELECT)
-async def back_to_sensors(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(GraphStates.SENSOR_SELECT)
-    await callback.message.edit_text(
-        "Select sensor:",
+        "📈 Выберите сенсор для построения графика:",
         reply_markup=await GraphMenu.sensors_menu()
     )
+    await callback.answer()
 
 
-@dp.callback_query(F.data == "back", GraphStates.MONTH_SELECT)
-async def back_to_years(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(GraphStates.YEAR_SELECT)
+@dp.callback_query(GraphStates.sensor_selected)
+async def handle_sensor_selected(callback: CallbackQuery, state: FSMContext):
+        callback.
+
+
+@dp.callback_query(DateModeCallback.filter(F.action == "single"))
+async def handle_single_date_mode(
+        callback: CallbackQuery,
+        state: FSMContext
+):
+    await state.set_state(GraphStates.single_date_selected)
     await callback.message.edit_text(
-        "Select year:",
-        reply_markup=await GraphMenu.years_menu()
+        "Выберите дату:",
+        reply_markup=GraphMenu.calendar_menu(datetime.now().year, datetime.now().month)
     )
 
 
-@dp.callback_query(F.data == "back", GraphStates.DAY_SELECT)
-async def back_to_months(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(GraphStates.MONTH_SELECT)
-    data = await state.get_data()
+@dp.callback_query(DateModeCallback.filter(F.action == "period"))
+async def handle_period_date_mode(
+        callback: CallbackQuery,
+        state: FSMContext
+):
+    await state.set_state(GraphStates.period_start_selected)
+    await state.update_data(period_start=None, period_end=None)
     await callback.message.edit_text(
-        "Select month:",
-        reply_markup=await GraphMenu.months_menu(data['year'])
+        "Выберите начало периода:",
+        reply_markup=GraphMenu.calendar_menu(datetime.now().year, datetime.now().month)
+    )
+
+
+@dp.callback_query(
+    DateSelectionCallback.filter(F.action == "select"),
+    GraphStates.period_start_selected
+)
+async def handle_period_start_selection(
+        callback: CallbackQuery,
+        callback_data: DateSelectionCallback,
+        state: FSMContext
+):
+    await state.update_data(period_start={
+        "year": callback_data.year,
+        "month": callback_data.month,
+        "day": callback_data.day
+    })
+    await state.set_state(GraphStates.period_end_selected)
+    await callback.message.edit_text(
+        "Выберите конец периода:",
+        reply_markup=GraphMenu.calendar_menu(callback_data.year, callback_data.month)
+    )
+
+
+@dp.callback_query(
+    DateSelectionCallback.filter(F.action == "select"),
+    GraphStates.period_end_selected
+)
+async def handle_period_end_selection(
+        callback: CallbackQuery,
+        callback_data: DateSelectionCallback,
+        state: FSMContext
+):
+    data = await state.get_data()
+    start_date = datetime(
+        data['period_start']['year'],
+        data['period_start']['month'],
+        data['period_start']['day']
+    )
+    end_date = datetime(
+        callback_data.year,
+        callback_data.month,
+        callback_data.day
+    )
+
+    if end_date < start_date:
+        await callback.answer("Конечная дата не может быть раньше начальной!")
+        return
+
+    await state.update_data(period_end={
+        "year": callback_data.year,
+        "month": callback_data.month,
+        "day": callback_data.day
+    })
+
+    # Генерация графика
+    sensor_data = await state.get_data()
+    plot = await pg.generate_plot(
+        sensor_id=sensor_data['sensor_id'],
+        start_date=start_date,
+        end_date=end_date
+    )
+
+    if plot:
+        await callback.message.answer_photo(
+            BufferedInputFile(plot.getvalue(), "graph.png")
+        )
+    else:
+        await callback.message.answer("Нет данных за выбранный период")
+
+    await state.clear()
+
+
+@dp.callback_query(DateSelectionCallback.filter(F.action == "change_month"))
+async def handle_month_change(
+        callback: CallbackQuery,
+        callback_data: DateSelectionCallback
+):
+    await callback.message.edit_reply_markup(
+        reply_markup=GraphMenu.calendar_menu(
+            callback_data.year,
+            callback_data.month
+        )
     )

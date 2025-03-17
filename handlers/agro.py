@@ -1,11 +1,13 @@
 from aiogram import Router, F, types
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from config.keyboards import Keyboard
 from config.text import Text as txt, Text
 from config import db
 from database.models import User
+from aiogram.types import InlineKeyboardMarkup
 
 dp = Router()
 
@@ -38,4 +40,6 @@ async def settings(callback: types.CallbackQuery):
 @dp.callback_query(F.data == "panel")
 async def panel(callback: types.CallbackQuery):
     """Центр управления агрокомплексом"""
+    await callback.answer()
+    await callback.message.edit_reply_markup(reply_markup=await Keyboard.get_keyboard(Keyboard.Types.AGRO_PANEL))
 

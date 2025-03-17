@@ -3,7 +3,12 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from datetime import datetime
 import calendar
 
+from callbacks.graph import DateSelectionCallback, DateModeCallback
 from config import Config
+
+# bot/keyboards/graph.py
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+import calendar
 
 
 class GraphMenu:
@@ -12,46 +17,85 @@ class GraphMenu:
         builder = InlineKeyboardBuilder()
         for sensor in Config.SENSORS:
             builder.button(
-                text=f"Sensor {sensor}", 
+                text=f"Sensor {sensor}",
                 callback_data=f"sensor:{sensor}"
             )
         builder.adjust(1)
         return builder.as_markup()
 
     @staticmethod
-    async def years_menu():
+    def date_mode_menu():
         builder = InlineKeyboardBuilder()
-        current_year = datetime.now().year
-        for year in range(current_year - 5, current_year + 1):
-            builder.button(
-                text=str(year), 
-                callback_data=f"year:{year}"
-            )
-        builder.button(text="↩️ Cancel", callback_data="back")
-        builder.adjust(3)
+        builder.button(
+            text="📅 Один день",
+            callback_data=DateModeCallback(action="single")
+        )
+        builder.button(
+            text="📆 Период",
+            callback_data=DateModeCallback(action="period")
+        )
+        builder.adjust(1)
         return builder.as_markup()
 
     @staticmethod
-    async def months_menu(year: int):
+    def calendar_menu(year: int, month: int):
         builder = InlineKeyboardBuilder()
-        for month in range(1, 13):
-            builder.button(
-                text=datetime(year, month, 1).strftime("%B"),
-                callback_data=f"month:{month}"
-            )
-        builder.button(text="↩️ Back", callback_data="back")
-        builder.adjust(3)
-        return builder.as_markup()
 
-    @staticmethod
-    async def days_menu(year: int, month: int):
-        builder = InlineKeyboardBuilder()
-        num_days = calendar.monthrange(year, month)[1]
-        for day in range(1, num_days + 1):
-            builder.button(
-                text=str(day), 
-                callback_data=f"day:{day}"
+        # Заголовок с месяцем и годом
+        builder.button(
+            text=f"{calendar.month_name[month]} {year}",
+            callback_data="ignore"
+        )
+
+        # Дни недели
+        for day in ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]:
+            builder.button(text=day, callback_data="ignore")
+
+        # Дни месяца
+        month_cal = calendar.monthcalendar(year, month)
+        for week in month_cal:
+            for day in week:
+                if day == 0:
+                    builder.button(text=" ", callback_data="ignore")
+                else:
+                    builder.button(
+                        text=str(day),
+                        callback_data=DateSelectionCallback(
+                            action="select",
+                            year=year,
+                            month=month,
+                            day=day
+                        )
+                    )
+
+        # Навигация
+        builder.button(
+            text="⬅️",
+            callback_data=DateSelectionCallback(
+                action="change_month",
+                year=year - 1 if month == 1 else year,
+                month=12 if month == 1 else month - 1,
+                day=0
             )
-        builder.button(text="↩️ Back", callback_data="back")
-        builder.adjust(7)
+        )
+        builder.button(
+            text="➡️",
+            callback_data=DateSelectionCallback(
+                action="change_month",
+                year=year + 1 if month == 12 else year,
+                month=1 if month == 12 else month + 1,
+                day=0
+            )
+        )
+        builder.button(
+            text="✅ Подтвердить",
+            callback_data=DateSelectionCallback(
+                action="confirm",
+                year=year,
+                month=month,
+                day=0
+            )
+        )
+
+        builder.adjust(7, *[7] * len(month_cal), 2, 1)
         return builder.as_markup()
