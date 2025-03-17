@@ -10,11 +10,10 @@ from config.__init__ import db, bot
 from handlers.admin import dp as r1
 from handlers.agro import dp as r2
 from handlers.notifications import dp as r3
+from handlers.graph import dp as r4
 
 
-handlers = (r1, r2, r3)
-
-
+handlers = (r1, r2, r3, r4)
 
 
 async def main():

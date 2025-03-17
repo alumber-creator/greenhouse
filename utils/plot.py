@@ -3,7 +3,7 @@ import datetime
 
 import matplotlib.pyplot as plt
 from io import BytesIO
-from your_database_module import get_data
+from config import db
 
 
 class PlotGenerator:
@@ -12,17 +12,17 @@ class PlotGenerator:
         start = date.replace(hour=0, minute=0, second=0, microsecond=0)
         end = start.replace(day=date.day + 1)
 
-        data = await get_data(
-            "SELECT * FROM sensor_data WHERE sensor_id = $1 AND timestamp BETWEEN $2 AND $3",
-            (sensor_id, start, end)
+        data = await db.sensors.get_data(
+            f"SELECT * FROM {sensor_id} WHERE time BETWEEN ? AND ?",
+            (start, end)
         )
-
         if not data:
             return None
 
         def sync_plot():
             fig, ax = plt.subplots(figsize=(12, 6))
             timestamps = [d.timestamp for d in data]
+            timestamps.sort()
             values = [d.value for d in data]
 
             ax.plot(timestamps, values)

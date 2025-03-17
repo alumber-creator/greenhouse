@@ -53,7 +53,10 @@ class SensorDatabase(DatabaseHandler):
     async def get_data(self, query: str, params: Iterable[Any] = ()) -> list[SensorData]:
         """Получение всех результатов запроса"""
         async with self.connection() as conn:
-            cursor = await conn.execute(query, params)
-            return await cursor.fetchall()
+            results = await self.fetch_all(query, params)
+            return [SensorData.model_validate({
+                "value": float(row[1]),
+                "timestamp": (row[2]),
+            }) for row in results]
 
 
