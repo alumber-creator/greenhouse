@@ -24,9 +24,21 @@ async def graph(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@dp.callback_query(GraphStates.sensor_selected)
-async def handle_sensor_selected(callback: CallbackQuery, state: FSMContext):
-        callback. #дописать тут
+@dp.callback_query(
+    GraphStates.sensor_selected,
+    F.data.startswith("sensor_")
+)
+async def handle_sensor_selected(callback: types.CallbackQuery, state: FSMContext):
+    sensor_id = callback.data.split("_")[1]
+    await state.update_data(sensor_id=sensor_id)
+    await state.set_state(GraphStates.date_mode_selected)
+
+    await callback.message.edit_text(
+        f"✅ Выбран сенсор: {sensor_id}\n"
+        "📊 Выберите тип графика:",
+        reply_markup=GraphMenu.date_mode_menu()
+    )
+    await callback.answer()
 
 
 @dp.callback_query(DateModeCallback.filter(F.action == "single"))
