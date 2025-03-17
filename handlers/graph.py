@@ -26,7 +26,7 @@ async def graph(callback: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query(GraphStates.sensor_selected)
 async def handle_sensor_selected(callback: CallbackQuery, state: FSMContext):
-        callback.
+        callback. #дописать
 
 
 @dp.callback_query(DateModeCallback.filter(F.action == "single"))
