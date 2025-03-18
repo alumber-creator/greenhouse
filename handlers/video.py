@@ -53,11 +53,12 @@ async def handle_video_request(message: Message):
         else:
             final_file = output
 
-        # Отправка видео с использованием правильного InputFile
-        await message.reply_video(
-            video=InputFile(final_file),
-            caption="Последние 3 минуты"
-        )
+        # Отправка видео с использованием правильного подхода
+        with open(final_file, "rb") as video_file:
+            await message.reply_video(
+                video=InputFile(video_file, filename=final_file),
+                caption="Последние 3 минуты"
+            )
 
     except Exception as e:
         await message.reply(f"Ошибка: {str(e)}")
