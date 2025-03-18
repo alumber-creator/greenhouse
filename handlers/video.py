@@ -56,9 +56,10 @@ async def handle_video_request(message: Message):
 
         # Отправка видео с использованием правильного подхода
         with open(final_file, "rb") as video_file:
-
+            print(final_file)
+            print(video_file)
             await message.reply_video(
-                video=FSInputFile(video_file),
+                video=final_file,
                 caption="Последние 3 минуты"
             )
 
