@@ -10,7 +10,7 @@ import os
 from services.video import run_command, cleanup_old_files
 dp = Router()
 
-@dp.message(Command("start"))
+@dp.message(Command("video"))
 async def cmd_get_video(message: Message):
     try:
         now = datetime.now()
