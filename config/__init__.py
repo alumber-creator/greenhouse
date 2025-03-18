@@ -17,13 +17,13 @@ class Config:
 
     MAX_TEXT_LENGTH = 4000
 
-    TEMP_DIR = "video_buffer"
-
-    BUFFER_DURATION = 3  # минуты
+    SEGMENT_DURATION = 60  # Длительность сегмента в секундах (1 минута)
+    MAX_SEGMENTS = 3  # Хранить последние 3 сегмента (3 минуты)
+    RESOLUTION = (640, 480)  # Разрешение видео
+    FPS = 30  # Кадров в секунду
 
 
 db = Database(Config.SENSORS)
-
 load_dotenv()
 
 TOKEN = os.getenv('BOT_TOKEN')

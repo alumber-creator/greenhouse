@@ -12,14 +12,13 @@ from handlers.agro import dp as r2
 from handlers.notifications import dp as r3
 from handlers.graph import dp as r4
 from handlers.video import dp as r5
-from services.video import start_ffmpeg_recording
+from services.video import recorder
 
 handlers = (r1, r2, r3, r4, r5)
 
 
 async def main():
     await db.initialize()
-    ffmpeg_process = start_ffmpeg_recording()
 
     default = DefaultBotProperties(parse_mode=ParseMode.HTML)
     dp = Dispatcher(storage=MemoryStorage(), default=default)
@@ -31,7 +30,8 @@ async def main():
     try:
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
     finally:
-        ffmpeg_process.terminate()
+        recorder.running = False
+        recorder.thread.join()
 
 
 if __name__ == "__main__":

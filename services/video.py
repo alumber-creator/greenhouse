@@ -1,47 +1,81 @@
-from config import Config
-import os
-import asyncio
-import subprocess
-import glob
+import threading
+import logging
+import time
 from datetime import datetime
 
-def start_ffmpeg_recording():
-    """Запуск фоновой записи видео сегментами"""
-    os.makedirs(Config.TEMP_DIR, exist_ok=True)
-    command = [
-        "ffmpeg",
-        "-i", "/dev/video0",           # Источник видео (может отличаться)
-        "-c:v", "libx264",             # Кодек
-        "-f", "segment",               # Формат сегментов
-        "-strftime", "1",              # Использовать время в имени файла
-        "-segment_time", "10",         # Длительность сегмента (сек)
-        "-reset_timestamps", "1",      # Сброс таймстемпов
-        f"{Config.TEMP_DIR}/%Y%m%d%H%M%S.mp4" # Шаблон имени файла
-    ]
-    return subprocess.Popen(command, stderr=subprocess.DEVNULL)
+import cv2
+import os
+
+from config import Config
 
 
 
-async def run_command(command):
-    """Асинхронный запуск команд"""
-    process = await asyncio.create_subprocess_exec(
-        *command,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
-    )
-    await process.wait()
-    return process.returncode == 0
+class VideoRecorder:
+    def __init__(self):
+        self.segments = []
+        self.lock = threading.Lock()
+        self.running = False
+        self.cap = None
+        self.writer = None
+        self.segment_start = None
 
-async def cleanup_old_files(threshold):
-    """Удаление старых файлов"""
-    for path in glob.glob(f"{Config.TEMP_DIR}/*.mp4"):
-        filename = os.path.basename(path)
-        try:
-            dt = datetime.strptime(filename, "%Y%m%d%H%M%S.mp4")
-        except ValueError:
-            continue
-        if dt < threshold:
-            os.remove(path)
+    def start(self):
+        self.running = True
+        self.thread = threading.Thread(target=self._record)
+        self.thread.start()
+
+    def _record(self):
+        self.cap = cv2.VideoCapture(0)
+        if not self.cap.isOpened():
+            logging.error("Cannot open camera")
+            return
+
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, Config.RESOLUTION[0])
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, Config.RESOLUTION[1])
+
+        while self.running:
+            ret, frame = self.cap.read()
+            if not ret:
+                logging.warning("Can't receive frame")
+                continue
+
+            if self.writer is None or time.time() - self.segment_start > Config.SEGMENT_DURATION:
+                self._create_new_segment()
+
+            self.writer.write(frame)
+
+        self._cleanup()
+
+    def _create_new_segment(self):
+        if self.writer is not None:
+            self.writer.release()
+
+        filename = f"segment_{datetime.now().strftime('%Y%m%d_%H%M%S')}.avi"
+        self.writer = cv2.VideoWriter(
+            filename,
+            cv2.VideoWriter_fourcc(*'XVID'),
+            Config.FPS,
+            Config.RESOLUTION
+        )
+        self.segment_start = time.time()
+
+        with self.lock:
+            self.segments.append(filename)
+            while len(self.segments) > Config.MAX_SEGMENTS:
+                old = self.segments.pop(0)
+                if os.path.exists(old):
+                    os.remove(old)
+
+    def get_segments(self):
+        with self.lock:
+            return self.segments.copy()
+
+    def _cleanup(self):
+        if self.writer is not None:
+            self.writer.release()
+        if self.cap is not None:
+            self.cap.release()
+        cv2.destroyAllWindows()
 
 
-
+recorder = VideoRecorder()

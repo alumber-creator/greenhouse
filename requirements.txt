@@ -5,3 +5,4 @@ pydantic
 matplotlib
 numpy
 ffmpeg-python
+opencv-python-headless

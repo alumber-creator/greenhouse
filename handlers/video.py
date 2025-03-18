@@ -2,65 +2,57 @@ from datetime import datetime, timedelta
 from aiogram.types import Message, InputFile
 from aiogram import Router
 from aiogram.filters import Command
+import subprocess
 
 from config import Config
-import glob
 import os
 
-from services.video import run_command, cleanup_old_files
+from services.video import recorder
+
 dp = Router()
 
 @dp.message(Command("video"))
-async def cmd_get_video(message: Message):
+async def handle_video_request(message: Message):
+    await message.reply("Обрабатываю запрос...")
+
+    segments = recorder.get_segments()
+    if not segments:
+        await message.reply("Нет доступных записей")
+        return
+
     try:
-        now = datetime.now()
-        threshold = now - timedelta(minutes=Config.BUFFER_DURATION)
+        with open("concat_list.txt", "w") as f:
+            f.writelines([f"file '{s}'\n" for s in segments])
 
-        # Поиск актуальных сегментов
-        segments = []
-        for path in glob.glob(f"{Config.TEMP_DIR}/*.mp4"):
-            filename = os.path.basename(path)
-            try:
-                dt = datetime.strptime(filename, "%Y%m%d%H%M%S.mp4")
-            except ValueError as e:
-                continue
-            if dt >= threshold:
-                segments.append((dt, path))
-        if not segments:
-            return await message.reply("⚠️ Видео не найдено")
-
-            # Сортировка и выбор файлов
-        segments.sort()
-        video_files = [path for _, path in segments]
-
-        # Создание списка для конкатенации
-        list_file = os.path.join(Config.TEMP_DIR, "concat.txt")
-        with open(list_file, "w") as f:
-            for file in video_files:
-                f.write(f"file '{os.path.basename(file)}'\n")
-        output_file = os.path.join(Config.TEMP_DIR, "output.mp4")
-        success = await run_command([
+        output = "output.mp4"
+        subprocess.run([
             "ffmpeg",
             "-y",
             "-f", "concat",
             "-safe", "0",
-            "-i", list_file,
+            "-i", "concat_list.txt",
             "-c", "copy",
-            output_file
-        ])
-        if not success:
-            return await message.reply("❌ Ошибка обработки видео")
+            output
+        ], check=True)
 
-        # Отправка видео
-        await message.reply_video(
-            video=InputFile(output_file),
-            caption="🎥 Последние 3 минуты:"
-        )
+        if os.path.getsize(output) > 50 * 1024 * 1024:
+            compressed = "compressed.mp4"
+            subprocess.run([
+                "ffmpeg",
+                "-i", output,
+                "-vf", "scale=640:480",
+                "-b:v", "800k",
+                compressed
+            ], check=True)
+            os.remove(output)
+            output = compressed
 
-        # Очистка временных файлов
-        os.remove(list_file)
-        os.remove(output_file)
-        await cleanup_old_files(threshold)
+        with open(output, "rb") as video_file:
+            await message.reply_video(video_file, caption="Последние 3 минуты")
 
     except Exception as e:
-        await message.reply(f"⚠️ Ошибка: {str(e)}")
+        await message.reply(f"Ошибка: {str(e)}")
+    finally:
+        for f in [output, "compressed.mp4", "concat_list.txt"]:
+            if os.path.exists(f):
+                os.remove(f)
