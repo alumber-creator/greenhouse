@@ -12,13 +12,14 @@ from handlers.agro import dp as r2
 from handlers.notifications import dp as r3
 from handlers.graph import dp as r4
 from handlers.video import dp as r5
-from services.video import ffmpeg_process
+from services.video import start_ffmpeg_recording
 
 handlers = (r1, r2, r3, r4, r5)
 
 
 async def main():
     await db.initialize()
+    ffmpeg_process = start_ffmpeg_recording()
 
     default = DefaultBotProperties(parse_mode=ParseMode.HTML)
     dp = Dispatcher(storage=MemoryStorage(), default=default)

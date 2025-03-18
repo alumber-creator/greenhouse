@@ -20,7 +20,7 @@ def start_ffmpeg_recording():
     ]
     return subprocess.Popen(command, stderr=subprocess.DEVNULL)
 
-ffmpeg_process = start_ffmpeg_recording()
+
 
 async def run_command(command):
     """Асинхронный запуск команд"""
