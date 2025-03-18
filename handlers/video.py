@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from aiogram.types import Message
 from aiogram import Router
+from aiogram.filters import Command
 
 from config import Config
 import glob
@@ -9,7 +10,7 @@ import os
 from services.video import run_command, cleanup_old_files
 dp = Router()
 
-@dp.message_handler(commands=["getvideo"])
+@dp.message(Command("start"))
 async def cmd_get_video(message: Message):
     try:
         now = datetime.now()
