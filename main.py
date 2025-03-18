@@ -19,7 +19,7 @@ handlers = (r1, r2, r3, r4, r5)
 
 async def main():
     await db.initialize()
-
+    recorder.start()
     default = DefaultBotProperties(parse_mode=ParseMode.HTML)
     dp = Dispatcher(storage=MemoryStorage(), default=default)
 
