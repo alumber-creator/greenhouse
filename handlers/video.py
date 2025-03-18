@@ -58,7 +58,7 @@ async def handle_video_request(message: Message):
         with open(final_file, "rb") as video_file:
 
             await message.reply_video(
-                video=FSInputFile(video_file, filename=final_file),
+                video=video_file,
                 caption="Последние 3 минуты"
             )
 
