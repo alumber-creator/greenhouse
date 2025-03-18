@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from aiogram.types import Message
 from aiogram import Router
-from aiogram.filters import Command
+from aiogram.filters import Command, InputFile
 
 from config import Config
 import glob
@@ -52,9 +52,10 @@ async def cmd_get_video(message: Message):
             return await message.reply("❌ Ошибка обработки видео")
 
         # Отправка видео
-        with open(output_file, "rb") as f:
-            print(123)
-            await message.reply_video(f, caption="🎥 Последние 3 минуты:")
+        await message.reply_video(
+            video=InputFile(output_file),
+            caption="🎥 Последние 3 минуты:"
+        )
 
         # Очистка временных файлов
         os.remove(list_file)
