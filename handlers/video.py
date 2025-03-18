@@ -53,6 +53,7 @@ async def cmd_get_video(message: Message):
 
         # Отправка видео
         with open(output_file, "rb") as f:
+            print(123)
             await message.reply_video(f, caption="🎥 Последние 3 минуты:")
 
         # Очистка временных файлов
