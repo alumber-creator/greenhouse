@@ -56,6 +56,7 @@ async def handle_video_request(message: Message):
 
         # Отправка видео с использованием правильного подхода
         with open(final_file, "rb") as video_file:
+
             await message.reply_video(
                 video=FSInputFile(video_file, filename=final_file),
                 caption="Последние 3 минуты"
@@ -63,10 +64,5 @@ async def handle_video_request(message: Message):
 
     except Exception as e:
         await message.reply(f"Ошибка: {str(e)}")
-    finally:
-        # Удаление временных файлов
-        for f in [output, compressed, "concat_list.txt"]:
-            if os.path.exists(f):
-                os.remove(f)
 
 
