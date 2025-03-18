@@ -11,9 +11,10 @@ from handlers.admin import dp as r1
 from handlers.agro import dp as r2
 from handlers.notifications import dp as r3
 from handlers.graph import dp as r4
+from handlers.video import dp as r5
+from services.video import ffmpeg_process
 
-
-handlers = (r1, r2, r3, r4)
+handlers = (r1, r2, r3, r4, r5)
 
 
 async def main():
@@ -26,9 +27,13 @@ async def main():
         dp.include_router(router)
 
     await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+    try:
+        await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+    finally:
+        ffmpeg_process.terminate()
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     asyncio.run(main())
+

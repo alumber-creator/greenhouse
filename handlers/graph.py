@@ -68,6 +68,50 @@ async def handle_period_date_mode(
 
 @dp.callback_query(
     DateSelectionCallback.filter(F.action == "select"),
+    GraphStates.single_date_selected
+)
+async def handle_daily_selection(
+        callback: CallbackQuery,
+        callback_data: DateSelectionCallback,
+        state: FSMContext
+):
+    data = datetime(
+        callback_data.year,
+        callback_data.month,
+        callback_data.day
+    )
+    start_date = data.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_date = start_date.replace(hour=23, minute=59, second=59)
+
+    if end_date < start_date:
+        end_date, start_date = start_date, end_date
+
+    await state.update_data(period_end={
+        "year": callback_data.year,
+        "month": callback_data.month,
+        "day": callback_data.day
+    })
+    await callback.message.edit_text(text="Идёт генерация графика...")
+    # Генерация графика
+    sensor_data = await state.get_data()
+    plot = await pg.generate_plot(
+        sensor_id=sensor_data['sensor_id'],
+        start_date=start_date,
+        end_date=end_date
+    )
+    await callback.message.delete()
+    if plot:
+        await callback.message.answer_photo(
+            BufferedInputFile(plot.getvalue(), "graph.png")
+        )
+    else:
+        await callback.message.answer("Нет данных за выбранный период")
+
+    await state.clear()
+
+
+@dp.callback_query(
+    DateSelectionCallback.filter(F.action == "select"),
     GraphStates.period_start_selected
 )
 async def handle_period_start_selection(
@@ -109,8 +153,7 @@ async def handle_period_end_selection(
     )
 
     if end_date < start_date:
-        await callback.answer("Конечная дата не может быть раньше начальной!")
-        return
+        end_date, start_date = start_date, end_date
 
     await state.update_data(period_end={
         "year": callback_data.year,
@@ -120,12 +163,13 @@ async def handle_period_end_selection(
 
     # Генерация графика
     sensor_data = await state.get_data()
+    await callback.message.edit_text(text="Идёт генерация графика...")
     plot = await pg.generate_plot(
         sensor_id=sensor_data['sensor_id'],
         start_date=start_date,
         end_date=end_date
     )
-
+    await callback.message.delete()
     if plot:
         await callback.message.answer_photo(
             BufferedInputFile(plot.getvalue(), "graph.png")

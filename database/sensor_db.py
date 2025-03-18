@@ -35,14 +35,14 @@ class SensorDatabase(DatabaseHandler):
         """Валидация имени сенсора"""
         return name.isidentifier() and name in self._allowed_sensors
 
-    async def insert_data(self, data: SensorData) -> bool:
+    async def insert_data(self, sensor, data: SensorData) -> bool:
         """Вставка данных сенсора"""
-        if not self._validate_sensor_name(data.sensor_id):
-            raise ValueError(f"Invalid sensor ID: {data.sensor_id}")
+        if not self._validate_sensor_name(sensor):
+            raise ValueError(f"Invalid sensor ID: {sensor}")
 
         try:
             await self.execute(
-                f'INSERT INTO "{data.sensor_id}" (value, time) VALUES (?, ?)',
+                f'INSERT INTO "{sensor}" (value, time) VALUES (?, ?)',
                 (data.value, data.timestamp)
             )
             return True
@@ -52,9 +52,8 @@ class SensorDatabase(DatabaseHandler):
 
     async def get_data(self, query: str, params: Iterable[Any] = ()) -> list[SensorData]:
         """Получение всех результатов запроса"""
-        async with self.connection() as conn:
-            results = await self.fetch_all(query, params)
-            return [SensorData.model_validate({
+        results = await self.fetch_all(query, params)
+        return [SensorData.model_validate({
                 "value": float(row[1]),
                 "timestamp": (row[2]),
             }) for row in results]

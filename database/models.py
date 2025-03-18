@@ -10,5 +10,6 @@ class User(BaseModel):
 
 
 class SensorData(BaseModel):
+
     value: float
     timestamp: datetime

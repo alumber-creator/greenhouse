@@ -17,6 +17,10 @@ class Config:
 
     MAX_TEXT_LENGTH = 4000
 
+    TEMP_DIR = "video_buffer"
+
+    BUFFER_DURATION = 3  # минуты
+
 
 db = Database(Config.SENSORS)
 

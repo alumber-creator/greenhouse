@@ -4,3 +4,4 @@ python-dotenv
 pydantic
 matplotlib
 numpy
+ffmpeg-python

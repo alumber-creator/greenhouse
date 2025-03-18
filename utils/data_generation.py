@@ -34,8 +34,7 @@ class DataGen:
         for sensor in Config.SENSORS:
             for time in cls.generate_random_datetimes(start_date, end_date, 1000):
                 data = SensorData(
-                    sensor_id=sensor,
                     value=random.randint(10, 100),
                     timestamp=time
                 )
-                await db.sensors.insert_data(data)
+                await db.sensors.insert_data(sensor, data)

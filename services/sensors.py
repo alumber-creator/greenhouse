@@ -7,8 +7,8 @@ from database.models import SensorData
 
 
 class SensorService:
-    def __init__(self):
-        self.db = Database().sensors
+    def __init__(self, db: Database):
+        self.db = db
 
     async def get_sensor_data(
             self,

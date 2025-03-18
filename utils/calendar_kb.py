@@ -18,7 +18,7 @@ class GraphMenu:
         for sensor in Config.SENSORS:
             builder.button(
                 text=f"Sensor {sensor}",
-                callback_data=f"sensor:{sensor}"
+                callback_data=f"sensor_{sensor}"
             )
         builder.adjust(1)
         return builder.as_markup()
@@ -87,15 +87,6 @@ class GraphMenu:
                 day=0
             )
         )
-        builder.button(
-            text="✅ Подтвердить",
-            callback_data=DateSelectionCallback(
-                action="confirm",
-                year=year,
-                month=month,
-                day=0
-            )
-        )
 
-        builder.adjust(7, *[7] * len(month_cal), 2, 1)
+        builder.adjust(1, 7, *[7] * len(month_cal), 2, 1)
         return builder.as_markup()
