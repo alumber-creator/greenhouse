@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-from aiogram.types import Message, InputFile
+from aiogram.types import Message
+from aiogram.types.input_file import FSInputFile
 from aiogram import Router
 from aiogram.filters import Command
 import subprocess
@@ -56,7 +57,7 @@ async def handle_video_request(message: Message):
         # Отправка видео с использованием правильного подхода
         with open(final_file, "rb") as video_file:
             await message.reply_video(
-                video=InputFile(video_file, filename=final_file),
+                video=FSInputFile(video_file, filename=final_file),
                 caption="Последние 3 минуты"
             )
 
