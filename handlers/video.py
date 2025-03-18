@@ -22,7 +22,8 @@ async def cmd_get_video(message: Message):
             filename = os.path.basename(path)
             try:
                 dt = datetime.strptime(filename, "%Y%m%d%H%M%S.mp4")
-            except ValueError:
+            except ValueError as e:
+                print(e)
                 continue
             if dt >= threshold:
                 segments.append((dt, path))
