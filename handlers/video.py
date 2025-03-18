@@ -13,7 +13,7 @@ dp = Router()
 
 @dp.message(Command("video"))
 async def handle_video_request(message: Message):
-    await message.reply("Обрабатываю запрос...")
+    await message.reply("Обработка запроса...")
 
     segments = recorder.get_segments()
     if not segments:
@@ -25,12 +25,12 @@ async def handle_video_request(message: Message):
     final_file = None
 
     try:
-        # Создаем список для склейки
+        # Создание списка для склейки
         with open("concat_list.txt", "w") as f:
             f.writelines([f"file '{s}'\n" for s in segments])
 
-        # Склеиваем видео через ffmpeg
-        result = subprocess.run([
+        # Склейка видео
+        subprocess.run([
             "ffmpeg",
             "-y",
             "-f", "concat",
@@ -38,47 +38,33 @@ async def handle_video_request(message: Message):
             "-i", "concat_list.txt",
             "-c", "copy",
             output
-        ], capture_output=True, text=True)
+        ], check=True)
 
-        if result.returncode != 0:
-            raise Exception(f"FFmpeg error: {result.stderr}")
-
-        # Проверяем размер файла
+        # Сжатие при необходимости
         if os.path.getsize(output) > 50 * 1024 * 1024:
-            # Сжимаем видео
-            result = subprocess.run([
+            subprocess.run([
                 "ffmpeg",
                 "-i", output,
                 "-vf", "scale=640:480",
                 "-b:v", "800k",
                 compressed
-            ], capture_output=True, text=True)
-
-            if result.returncode != 0:
-                raise Exception(f"Compression error: {result.stderr}")
-
+            ], check=True)
             final_file = compressed
         else:
             final_file = output
 
-        # Проверяем существование файла
-        if not os.path.exists(final_file):
-            raise Exception("Final video file not created")
-
-        # Отправляем видео с использованием InputFile
-        with open(final_file, "rb") as video_file:
-            input_file = InputFile(video_file, filename=final_file)
-            await message.reply_video(
-                video=input_file,
-                caption="Последние 3 минуты"
-            )
+        # Отправка видео с использованием правильного InputFile
+        await message.reply_video(
+            video=InputFile(final_file),
+            caption="Последние 3 минуты"
+        )
 
     except Exception as e:
         await message.reply(f"Ошибка: {str(e)}")
     finally:
-        # Очистка временных файлов
-        temp_files = [output, compressed, "concat_list.txt"]
-        for f in temp_files:
+        # Удаление временных файлов
+        for f in [output, compressed, "concat_list.txt"]:
             if os.path.exists(f):
                 os.remove(f)
+
 
