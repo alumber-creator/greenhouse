@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
-from aiogram.types import Message
+from aiogram.types import Message, InputFile
 from aiogram import Router
-from aiogram.filters import Command, InputFile
+from aiogram.filters import Command
 
 from config import Config
 import glob
