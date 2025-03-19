@@ -28,7 +28,7 @@ async def main():
 
     await bot.delete_webhook(drop_pending_updates=True)
     try:
-        await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types(), ssl=False)
+        await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types(), ssl=False   )
     finally:
         recorder.running = False
         recorder.thread.join()
