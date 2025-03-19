@@ -25,7 +25,7 @@ class VideoRecorder:
         self.thread.start()
 
     def _record(self):
-        self.cap = cv2.VideoCapture(1)
+        self.cap = cv2.VideoCapture(0)
         if not self.cap.isOpened():
             logging.error("Cannot open camera")
             return
