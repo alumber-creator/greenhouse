@@ -53,11 +53,12 @@ async def handle_video_request(callback: types.CallbackQuery):
             final_file = compressed
         else:
             final_file = output
-        await message.delete()
+
         await message.reply_video(
             video=FSInputFile(final_file),
             caption="Последние 3 минуты"
         )
+        await message.delete()
 
     except Exception as e:
         await message.reply(f"Ошибка: {str(e)}")
