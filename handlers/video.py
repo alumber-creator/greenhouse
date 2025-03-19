@@ -4,21 +4,21 @@ from aiogram.types.input_file import FSInputFile
 from aiogram import Router
 from aiogram.filters import Command
 import subprocess
-
+from aiogram import types, F, Router
 from config import Config
 import os
 
 from services.video import recorder
 
 dp = Router()
-
-@dp.message(Command("video"))
-async def handle_video_request(message: Message):
-    await message.reply("Обработка запроса...")
+@dp.callback_query(F.data == "video")
+async def handle_video_request(callback: types.CallbackQuery):
+    message=callback.message
+    await message.edit_text(text="Обработка запроса...")
 
     segments = recorder.get_segments()
     if not segments:
-        await message.reply("Нет доступных записей")
+        await message.edit_text(text="Нет доступных записей")
         return
 
     output = "output.mp4"
@@ -53,7 +53,7 @@ async def handle_video_request(message: Message):
             final_file = compressed
         else:
             final_file = output
-
+        await message.delete()
         await message.reply_video(
             video=FSInputFile(final_file),
             caption="Последние 3 минуты"
