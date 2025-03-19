@@ -38,6 +38,7 @@ class Keyboard:
         ],
         Types.AGRO_PANEL: [
             ("График данных сенсоров", "agro.graph"),
+            ("Видео за последние 3 минуты", "video"),
             ("Назад", "start")
         ],
         Types.AGRO_GRAPH: [
