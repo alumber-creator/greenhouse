@@ -53,7 +53,7 @@ async def handle_video_request(callback: types.CallbackQuery):
             final_file = compressed
         else:
             final_file = output
-
+        print(123)
         await message.reply_video(
             video=FSInputFile(final_file),
             caption="Последние 3 минуты"
